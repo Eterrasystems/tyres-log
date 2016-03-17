@@ -2,6 +2,7 @@
   require_once("config.php");
   
   $db_link = DB_OpenI();
+  //goro
 //  asf
   //secured();
   //print_r($_GET);
