@@ -1,0 +1,1 @@
+<a href="http://www.eterrasystems.com" target="_blank">Eterrasystems inc. &COPY; <?php echo date("Y"); ?></a>&nbsp;&nbsp;&nbsp;
