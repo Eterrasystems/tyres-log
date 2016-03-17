@@ -3,7 +3,6 @@
   
   $db_link = DB_OpenI();
   //goro
-//  asf
   //secured();
   //print_r($_GET);
   if (isset($_GET['page']) && $_GET['page'] === "logout") {
