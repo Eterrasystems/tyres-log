@@ -1,16 +1,18 @@
 <?php
   if(isset($_POST['create_tyre_storage'])) {
-    echo "<pre>";print_r($_POST);exit;
+    //echo "<pre>";print_r($_POST);exit;
     
-    $employer_id = $_SESSION['tyreslog']['user_id'];
-    if(isset($_POST['tyre_storage_id'])) {
-      $tyre_storage_id = $_POST['tyre_storage_id'];
-    }
     if(isset($_POST['client_id'])) {
       $client_id = $_POST['client_id'];
     }
-    if(isset($_POST['vehicle_model_id'])) {
-      $vehicle_model_id = $_POST['vehicle_model_id'];
+    if(isset($_POST['vehicle_type'])) {
+      $vehicle_type_id = $_POST['vehicle_type'];
+    }
+    if(isset($_POST['vehicle_make'])) {
+      $vehicle_make_id = $_POST['vehicle_make'];
+    }
+    if(isset($_POST['vehicle_model'])) {
+      $vehicle_model_id = $_POST['vehicle_model'];
     }
     if(isset($_POST['vehicle_plate'])) {
       $vehicle_plate = $_POST['vehicle_plate'];
@@ -19,13 +21,18 @@
       $warehouse_id = $_POST['warehouse_id'];
     }
     if(isset($_POST['date_insert'])) {
-      $tyre_storage_date = $_POST['date_insert'];
+      $tyre_storage_datein = $_POST['date_insert'];
     }
     if(isset($_POST['tyre_storage_note'])) {
       $tyre_storage_note = prepare_for_null_row(mysqli_real_escape_string($db_link,$_POST['tyre_storage_note']));
     }
     
     mysqli_query($db_link, "START TRANSACTION");
+    
+    $tyre_storage_state = 1; //first state take in the office
+    $employer_took_tyres = $_SESSION['tyreslog']['user_id'];
+    $tyre_storage_is_active = 1;
+    $employer_returned_tyres = 0;
     
     $query_insert_ts = "INSERT INTO `tyres_storages`(
                                 `tyre_storage_id`, 
@@ -42,13 +49,20 @@
                                 `tyre_storage_is_active`, 
                                 `employer_returned_tyres`, 
                                 `tyre_storage_dateout`)
-                        VALUES ('$tyre_storage_id',
+                        VALUES ('',
                                 '$client_id',
                                 '$warehouse_id',
+                                '$vehicle_type_id',
+                                '$vehicle_make_id',
                                 '$vehicle_model_id',
                                 '$vehicle_plate',
-                                $tyre_note,
-                                '$tyre_storage_date')";
+                                '$tyre_storage_state',
+                                $tyre_storage_note,
+                                '$employer_took_tyres',
+                                '$tyre_storage_datein',
+                                '$tyre_storage_is_active',
+                                '$employer_returned_tyres',
+                                NULL)";
     $all_queries = $query_insert_ts."\n";
     //echo $query;exit;
     $result_insert_ts = mysqli_query($db_link, $query_insert_ts);
@@ -58,6 +72,9 @@
       mysqli_query($db_link, "ROLLBACK");
       exit;
     }
+    
+    $tyre_storage_id = mysqli_insert_id($db_link);
+    $tyre_storage_id_formatted = sprintf('%010d', $tyre_storage_id);
     
     //log
     //log_tyre_storage_action: 0 - create, 1 - edit, 2 - delete
@@ -100,13 +117,19 @@
                                   `tyre_storage_dateout`)
                           VALUES ('$ltsa_id',
                                   '$tyre_storage_id',
-                                  '$user_id',
                                   '$client_id',
                                   '$warehouse_id',
+                                  '$vehicle_type_id',
+                                  '$vehicle_make_id',
                                   '$vehicle_model_id',
                                   '$vehicle_plate',
-                                  $tyre_note,
-                                  '$tyre_storage_date')";
+                                  '$tyre_storage_state',
+                                  $tyre_storage_note,
+                                  '$employer_took_tyres',
+                                  '$tyre_storage_datein',
+                                  '$tyre_storage_is_active',
+                                  '$employer_returned_tyres',
+                                  NULL)";
     $all_queries .= $query_log_storage."\n";
     //echo $query;exit;
     $result_log_storage = mysqli_query($db_link, $query_log_storage);
@@ -117,6 +140,9 @@
       exit;
     }
     //log
+    
+    //echo $all_queries;mysqli_query($db_link, "ROLLBACK");exit;
+    mysqli_query($db_link, "COMMIT");
     
   }
 ?>
@@ -172,18 +198,23 @@
         $vehicle_type = $vehicles_types['vehicle_type'];
         $vehicle_type = $laguages[$default_lang][$vehicle_type];
         $vehicle_image_id = $vehicles_types['vehicle_image_id'];
-        $class_active = ($vehicle_type_id == 1) ? " active" : "";
+        $class_active = "";
+        if($vehicle_type_id == 1) {
+          $class_active = " active";
+          $current_type = $vehicle_type_id;
+        }
 
         echo "<a data-id='$vehicle_type_id' id='$vehicle_image_id' class='vehicle_type$class_active' title='$vehicle_type'>$vehicle_type</a>";
       }
     }
 ?>
+        <input type="hidden" name="vehicle_type" id="vehicle_type_input" value="<?=$current_type;?>" />
       </div>
     </div>
 <!--vehicle_make-->
     <div class="form_row">
       <label><?=$laguages[$default_lang]['vehicle_make_label'];?>:</label>
-      <select id="vehicle_make" onChange="LoadVehicleModelsForMakeInSelect()">
+      <select id="vehicle_make" name="vehicle_make" onChange="LoadVehicleModelsForMakeInSelect()">
         <!--<option selected="selected"><?=$laguages[$default_lang]['choose_vehicle_type_first'];?></option>-->
 <?php
       // get only car makes
@@ -217,16 +248,15 @@
       <select id="vehicle_model_default">
         <option value="0" selected="selected"><?=$laguages[$default_lang]['choose_vehicle_make_first'];?></option>
       </select>
-      <select id="vehicle_model" style="display: none;">
+      <select id="vehicle_model" name="vehicle_model" style="display: none;">
 
       </select>
     </div>
 <!--vehicle_plate-->
     <div class="form_row">
       <label><?=$laguages[$default_lang]['vehicle_plate_label'];?>:</label>
-      <input type="text" name="vehicle_plate" id="vehicle_plate" class="input_text">
       <input type="hidden" name="vehicle_plate_error" id="vehicle_plate_error" value="<?=$laguages[$default_lang]['error_reception_protocol_vehicle_plate'];?>">
-      <select id="vehicle_plate_select" name="vehicle_plate_select" style="display: none;">
+      <select id="vehicle_plate_select" name="vehicle_plate" style="display: none;">
 
       </select>
     </div>
@@ -262,6 +292,7 @@ $(document).ready(function() {
   $(".vehicle_type").click(function() {
     $(".vehicle_type").removeClass("active");
     $(this).addClass("active");
+    $("#vehicle_type_input").val($(this).attr("data-id"));
     LoadVehicleMakesForTypeInSelect();
   });
     
