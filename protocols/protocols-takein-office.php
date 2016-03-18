@@ -147,6 +147,12 @@
   }
 ?>
 <h1><?=$laguages[$default_lang]['tyre_reception'];?>:</h1>
+<?php 
+  if(isset($tyre_storage_id_formatted)) {
+    echo $tyre_storage_id_formatted;
+  }
+  else {
+?>
 <div id="wrapper">
   <!--<form name="warehouse_tyres_form" id="warehouse_tyres_form" method="post" action="index.php?current=take_conform" enctype="multipart/form-data">-->
   <form action="/protocols-takein-office" method="post" name="office_tyres_form" id="office_tyres_form">
@@ -310,3 +316,6 @@ $(document).ready(function() {
   });
 });
 </script>
+<?php
+  }
+?>
