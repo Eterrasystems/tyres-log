@@ -1,16 +1,36 @@
 <h1><?=$laguages[$default_lang]['tyre_reception'];?>:</h1>
-<div id="wrapper">
 <?php
-  $query_auto_number = "SELECT LPAD( MAX(tyre_storage_id) + 1, 10, '0') AS `tyre_storage_id` FROM `tyres_storages`";
-  //echo $query_auto_number;
-  $result_auto_number = mysqli_query($db_link, $query_auto_number);
-  if(!$result_auto_number) echo mysqli_error($db_link);
-  if(mysqli_num_rows($result_auto_number) > 0) {
-    $row_auto_number = mysqli_fetch_assoc($result_auto_number);
-    $tyre_storage_number = (is_null($row_auto_number['tyre_storage_id']) ? "00000000001" : $row_auto_number['tyre_storage_id']);
+  $query_tyre_storages = "SELECT LPAD((`tyres_storages`.`tyre_storage_id`), 10, '0') AS `tyre_storage_id`,`tyres_storages`.`vehicle_type_id`,`tyres_storages`.`vehicle_make_id`,
+                              `tyres_storages`.`vehicle_model_id`,`tyres_storages`.`vehicle_plate`,`tyres_storages`.`tyre_storage_datein`,`warehouses`.`warehouse_name`,
+                              `warehouse_workers`.`user_firstname`,`warehouse_workers`.`user_lastname`,`clients`.`user_firstname` as client_firstname,
+                              `clients`.`user_lastname` as client_lastname
+                          FROM `tyres_storages`
+                          INNER JOIN `warehouses` ON `warehouses`.`warehouse_id` = `tyres_storages`.`warehouse_id`
+                          INNER JOIN `users` as `warehouse_workers` ON `warehouse_workers`.`user_id` = `tyres_storages`.`employer_took_tyres`
+                          INNER JOIN `users` as `clients` ON `clients`.`user_id` = `tyres_storages`.`client_id`
+                          WHERE `tyre_storage_state` = '1'
+                          ORDER BY `tyre_storage_id`";
+  //echo $query_tyre_storages;
+  $result_tyre_storages = mysqli_query($db_link, $query_tyre_storages);
+  if(!$result_tyre_storages) echo mysqli_error($db_link);
+  if(mysqli_num_rows($result_tyre_storages) > 0) {
+    while($row_tyre_storages = mysqli_fetch_assoc($result_tyre_storages)) {
+      
+      $tyre_storage_id = $row_tyre_storages['tyre_storage_id'];
+      $vehicle_type_id = $row_tyre_storages['vehicle_type_id'];
+      $vehicle_make_id = $row_tyre_storages['vehicle_make_id'];
+      $vehicle_model_id = $row_tyre_storages['vehicle_model_id'];
+      $vehicle_plate = $row_tyre_storages['vehicle_plate'];
+      $tyre_storage_datein = date("H:m",  strtotime($row_tyre_storages['tyre_storage_datein']));
+      $warehouse_name = $row_tyre_storages['warehouse_name'];
+      $offince_employer_took_tyres = $row_tyre_storages['user_firstname']." ".$row_tyre_storages['user_lastname'];
+      $client_name = $row_tyre_storages['client_firstname']." ".$row_tyre_storages['client_lastname'];
+      
+      echo "<p>- <a href=''>$tyre_storage_id / $client_name / $tyre_storage_datein</a></p>";
+    }
   }
 ?>
-  <!--<form name="warehouse_tyres_form" id="warehouse_tyres_form" method="post" action="index.php?current=take_conform" enctype="multipart/form-data">-->
+<div id="wrapper">
   <div id="warehouse_tyres_form">
 <!--tyre_storage_id-->
     <div class="form_row hidden">
@@ -19,23 +39,13 @@
       <hr>
     </div>
 <!--client_name-->
-    <div class="form_row">
-      <label><?=$laguages[$default_lang]['client_name_label'];?>:</label>
-      <input type="text" name="client_name" id="client_name" class="input_text" style="margin-right:10px;">
-      <a href="administration-manage-user" class="button add" target="_blank">
-        <i class="icon_plus_sign"></i>
-        <?=$laguages[$default_lang]['btn_add_new_client'];?>
-      </a>
-    </div>
-    <input type="hidden" name="client_id" id="client_id" />
-    <input type="hidden" name="client_error" id="client_error" value="<?=$laguages[$default_lang]['error_reception_protocol_client'];?>" />
-<!--<hr>-->
-    <hr>
+    <input type="hidden" name="client_name" id="client_name"  value="<?=$client_name;?>"/>
+
 <!--vehicle_type-->
     <!--<div class="form_row" style="display:none">-->
-    <div class="form_row">
-      <label><?=$laguages[$default_lang]['vehicle_type_label'];?>:</label>
+    <div class="form_row hidden">
       <div id="vehicle_type">
+        <a data-id="<?=$vehicle_type_id;?>" class="vehicle_type active"></a>
 <?php
     $query = "SELECT `vehicles_types`.* FROM `vehicles_types` ORDER BY `vehicle_type_id` ASC";
     $result = mysqli_query($db_link, $query);

@@ -11,21 +11,6 @@
   if(isset($_POST['tyre_storage_id'])) {
     $tyre_storage_id = $_POST['tyre_storage_id'];
   }
-  if(isset($_POST['client_id'])) {
-    $client_id = $_POST['client_id'];
-  }
-  if(isset($_POST['vehicle_model_id'])) {
-    $vehicle_model_id = $_POST['vehicle_model_id'];
-  }
-  if(isset($_POST['vehicle_plate'])) {
-    $vehicle_plate = $_POST['vehicle_plate'];
-  }
-  if(isset($_POST['warehouse_id'])) {
-    $warehouse_id = $_POST['warehouse_id'];
-  }
-  if(isset($_POST['date_insert'])) {
-    $tyre_storage_date = $_POST['date_insert'];
-  }
   if(isset($_POST['tyre_position_ids'])) {
     $tyre_position_ids = $_POST['tyre_position_ids'];
   }
