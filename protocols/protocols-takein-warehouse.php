@@ -1,51 +1,83 @@
 <h1><?=$laguages[$default_lang]['tyre_reception'];?>:</h1>
 <?php
-  $query_tyre_storages = "SELECT LPAD((`tyres_storages`.`tyre_storage_id`), 10, '0') AS `tyre_storage_id`,`tyres_storages`.`vehicle_type_id`,`tyres_storages`.`vehicle_make_id`,
-                              `tyres_storages`.`vehicle_model_id`,`tyres_storages`.`vehicle_plate`,`tyres_storages`.`tyre_storage_datein`,`warehouses`.`warehouse_name`,
-                              `warehouse_workers`.`user_firstname`,`warehouse_workers`.`user_lastname`,`clients`.`user_firstname` as client_firstname,
-                              `clients`.`user_lastname` as client_lastname
-                          FROM `tyres_storages`
-                          INNER JOIN `warehouses` ON `warehouses`.`warehouse_id` = `tyres_storages`.`warehouse_id`
-                          INNER JOIN `users` as `warehouse_workers` ON `warehouse_workers`.`user_id` = `tyres_storages`.`employer_took_tyres`
-                          INNER JOIN `users` as `clients` ON `clients`.`user_id` = `tyres_storages`.`client_id`
-                          WHERE `tyre_storage_state` = '1'
-                          ORDER BY `tyre_storage_id`";
-  //echo $query_tyre_storages;
-  $result_tyre_storages = mysqli_query($db_link, $query_tyre_storages);
-  if(!$result_tyre_storages) echo mysqli_error($db_link);
-  if(mysqli_num_rows($result_tyre_storages) > 0) {
-    while($row_tyre_storages = mysqli_fetch_assoc($result_tyre_storages)) {
-      
-      $tyre_storage_id = $row_tyre_storages['tyre_storage_id'];
-      $vehicle_type_id = $row_tyre_storages['vehicle_type_id'];
-      $vehicle_make_id = $row_tyre_storages['vehicle_make_id'];
-      $vehicle_model_id = $row_tyre_storages['vehicle_model_id'];
-      $vehicle_plate = $row_tyre_storages['vehicle_plate'];
-      $tyre_storage_datein = date("H:m",  strtotime($row_tyre_storages['tyre_storage_datein']));
-      $warehouse_name = $row_tyre_storages['warehouse_name'];
-      $offince_employer_took_tyres = $row_tyre_storages['user_firstname']." ".$row_tyre_storages['user_lastname'];
-      $client_name = $row_tyre_storages['client_firstname']." ".$row_tyre_storages['client_lastname'];
-      
-      echo "<p>- <a href=''>$tyre_storage_id / $client_name / $tyre_storage_datein</a></p>";
+  if(!isset($_GET['tyre_storage_id'])) {
+    $query_tyre_storages = "SELECT `tyres_storages`.`tyre_storage_id`,`tyres_storages`.`tyre_storage_datein`,
+                                `warehouse_workers`.`user_firstname`,`warehouse_workers`.`user_lastname`,`clients`.`user_firstname` as client_firstname,
+                                `clients`.`user_lastname` as client_lastname
+                            FROM `tyres_storages`
+                            INNER JOIN `users` as `warehouse_workers` ON `warehouse_workers`.`user_id` = `tyres_storages`.`employer_took_tyres`
+                            INNER JOIN `users` as `clients` ON `clients`.`user_id` = `tyres_storages`.`client_id`
+                            WHERE `tyre_storage_state` = '1'
+                            ORDER BY `tyre_storage_id`";
+    //echo $query_tyre_storages;
+    $result_tyre_storages = mysqli_query($db_link, $query_tyre_storages);
+    if(!$result_tyre_storages) echo mysqli_error($db_link);
+    if(mysqli_num_rows($result_tyre_storages) > 0) {
+      while($row_tyre_storages = mysqli_fetch_assoc($result_tyre_storages)) {
+
+        $tyre_storage_id = $row_tyre_storages['tyre_storage_id'];
+        $tyre_storage_id_formatted = sprintf('%010d', $tyre_storage_id);
+        $tyre_storage_datein = date("H:m",  strtotime($row_tyre_storages['tyre_storage_datein']));
+        $offince_employer_took_tyres = $row_tyre_storages['user_firstname']." ".$row_tyre_storages['user_lastname'];
+        $client_name = $row_tyre_storages['client_firstname']." ".$row_tyre_storages['client_lastname'];
+
+        echo "<p>- <a href='/protocols-takein-warehouse?tyre_storage_id=$tyre_storage_id'>$tyre_storage_id_formatted / $client_name / $tyre_storage_datein</a></p>";
+      }
     }
   }
+  else {
+    
+    $tyre_storage_id = $_GET['tyre_storage_id'];
+    $tyre_storage_id_formatted = sprintf('%010d', $_GET['tyre_storage_id']);
+    
+    $query_tyre_storages = "SELECT `tyres_storages`.`vehicle_type_id`,`tyres_storages`.`vehicle_make_id`,`tyres_storages`.`vehicle_model_id`,
+                                  `tyres_storages`.`vehicle_plate`,`tyres_storages`.`tyre_storage_datein`,`warehouses`.`warehouse_name`,`warehouse_workers`.`user_firstname`,
+                                  `warehouse_workers`.`user_lastname`,`clients`.`user_firstname` as client_firstname,`clients`.`user_lastname` as client_lastname
+                            FROM `tyres_storages`
+                            INNER JOIN `warehouses` ON `warehouses`.`warehouse_id` = `tyres_storages`.`warehouse_id`
+                            INNER JOIN `users` as `warehouse_workers` ON `warehouse_workers`.`user_id` = `tyres_storages`.`employer_took_tyres`
+                            INNER JOIN `users` as `clients` ON `clients`.`user_id` = `tyres_storages`.`client_id`
+                            WHERE `tyres_storages`.`tyre_storage_id` = '$tyre_storage_id'";
+    //echo $query_tyre_storages;
+    $result_tyre_storages = mysqli_query($db_link, $query_tyre_storages);
+    if(!$result_tyre_storages) echo mysqli_error($db_link);
+    if(mysqli_num_rows($result_tyre_storages) > 0) {
+        
+        $row_tyre_storages = mysqli_fetch_assoc($result_tyre_storages);
+
+        $current_vehicle_type_id = $row_tyre_storages['vehicle_type_id'];
+        $current_vehicle_make_id = $row_tyre_storages['vehicle_make_id'];
+        $current_vehicle_model_id = $row_tyre_storages['vehicle_model_id'];
+        $vehicle_plate = $row_tyre_storages['vehicle_plate'];
+        $tyre_storage_datein = date("H:m",  strtotime($row_tyre_storages['tyre_storage_datein']));
+        $warehouse_name = $row_tyre_storages['warehouse_name'];
+        $offince_employer_took_tyres = $row_tyre_storages['user_firstname']." ".$row_tyre_storages['user_lastname'];
+        $client_name = $row_tyre_storages['client_firstname']." ".$row_tyre_storages['client_lastname'];
+
+    }
 ?>
 <div id="wrapper">
   <div id="warehouse_tyres_form">
 <!--tyre_storage_id-->
-    <div class="form_row hidden">
+    <div class="form_row">
       <label><?=$laguages[$default_lang]['reception_protocol_label'];?>:</label>
-      <input type="text" name="tyre_storage_id" id="tyre_storage_id" class="input_text" value="<?php echo $tyre_storage_number; ?>" disabled="disabled">
-      <hr>
+      <input type="text" name="tyre_storage_id" id="tyre_storage_id" class="input_text" value="<?=$tyre_storage_id_formatted;?>" disabled="disabled">
     </div>
+    <hr>
+    
 <!--client_name-->
-    <input type="hidden" name="client_name" id="client_name"  value="<?=$client_name;?>"/>
+    <div class="form_row">
+      <label><?=$laguages[$default_lang]['client_name_label'];?>:</label>
+      <span><?=$client_name;?></span>
+      <input type="hidden" name="client_name" id="client_name"  value="<?=$client_name;?>"/>
+    </div>
 
 <!--vehicle_type-->
     <!--<div class="form_row" style="display:none">-->
-    <div class="form_row hidden">
+    <div class="form_row">
       <div id="vehicle_type">
-        <a data-id="<?=$vehicle_type_id;?>" class="vehicle_type active"></a>
+        <label><?=$laguages[$default_lang]['vehicle_type_label'];?>:</label>
+        <div class="hidden">
 <?php
     $query = "SELECT `vehicles_types`.* FROM `vehicles_types` ORDER BY `vehicle_type_id` ASC";
     $result = mysqli_query($db_link, $query);
@@ -56,20 +88,24 @@
         $vehicle_type = $vehicles_types['vehicle_type'];
         $vehicle_type = $laguages[$default_lang][$vehicle_type];
         $vehicle_image_id = $vehicles_types['vehicle_image_id'];
-        $class_active = ($vehicle_type_id == 1) ? " active" : "";
+        if($vehicle_type_id == $current_vehicle_type_id) {
+          $class_active = " active";
+          $current_vehicle_type = $vehicle_type;
+        }
+        $class_active = "";
 
         echo "<a data-id='$vehicle_type_id' id='$vehicle_image_id' class='vehicle_type$class_active' title='$vehicle_type'>$vehicle_type</a>";
       }
     }
 ?>
-        <!--<a data-id="1" class="vehicle_type active"></a>-->
+          </div>
+        <span><?=$current_vehicle_type;?></span>
       </div>
     </div>
 <!--vehicle_make-->
     <div class="form_row">
       <label><?=$laguages[$default_lang]['vehicle_make_label'];?>:</label>
-      <select id="vehicle_make" onChange="LoadVehicleModelsForMakeInSelect()">
-        <!--<option selected="selected"><?=$laguages[$default_lang]['choose_vehicle_type_first'];?></option>-->
+      <select id="vehicle_make" class="hidden" onChange="LoadVehicleModelsForMakeInSelect()">
 <?php
       // get only car makes
       $query = "SELECT `vehicles_makes`.* 
@@ -79,13 +115,17 @@
       $result = mysqli_query($db_link, $query);
       if(mysqli_num_rows($result) > 0) {
 
-        echo "<option value='0' selected='selected'>".$laguages[$default_lang]['choose_make']."</option>";
         while($vehicles_makes = mysqli_fetch_assoc($result)) {
 
           $vehicle_make_id = $vehicles_makes['vehicle_make_id'];
           $vehicle_make = $vehicles_makes['vehicle_make'];
+          if($vehicle_make_id == $current_vehicle_make_id) {
+            $selected = "selected='selected'";
+            $current_vehicle_make = $vehicle_make;
+          }
+          $selected = "";
 
-          echo "<option value='$vehicle_make_id'>$vehicle_make</option>";
+          echo "<option value='$vehicle_make_id' $selected>$vehicle_make</option>";
         }
       }
       else {   
@@ -95,6 +135,7 @@
       }
 ?>
       </select>
+      <span><?=$current_vehicle_make;?></span>
     </div>
 <!--vehicle_model-->
     <div class="form_row">
@@ -116,7 +157,7 @@
       </select>
     </div>
 <!--tyres_form-->
-    <div id="tyres_form" class="hidden">
+    <div id="tyres_form">
 <?php
     $query_tyres_positions = "SELECT `tyre_position_id`, `tyre_position_code`, `tyre_position_css_class` FROM `tyres_position`";
     $result_tyres_positions = mysqli_query($db_link, $query_tyres_positions);
@@ -478,17 +519,8 @@ $(document).ready(function() {
       $(this).addClass("active");
     }
   });
-    
-  //autocomplete Client
-  $( "#client_name" ).autocomplete({
-    source: "protocols/ajax/get/get-clients-for-autocomplete.php",
-    minLength: 2,
-    select: function( event, ui ) {
-      //alert(ui.item.client_id);
-      $('#client_name').val(ui.item.client_name);
-      $('#client_id').val(ui.item.client_id);
-      LoadVehiclePlatesForClient(ui.item.client_id);
-    }
-  });
 });
 </script>
+<?php
+  }
+?>
