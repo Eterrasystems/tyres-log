@@ -59,6 +59,40 @@
     
     mysqli_query($db_link, "START TRANSACTION");
     
+    $query = "UPDATE `tyres_storages` SET `tyre_storage_state`='2' WHERE `tyre_storage_id`='$tyre_storage_id'";
+    $all_queries = $query."\n";
+    //echo $query;exit;
+    $result = mysqli_query($db_link, $query);
+    if(!$result) {
+      echo $laguages[$default_lang]['sql_error_update'];
+      echo mysqli_error($db_link);
+      mysqli_query($db_link, "ROLLBACK");
+      exit;
+    }
+    
+    //log
+    //log_tyre_storage_action: 0 - create, 1 - edit, 2 - delete
+    $query_log_action = "INSERT INTO `logs_tyres_storages_actions`(
+                                              `ltsa_id`, 
+                                              `user_id`, 
+                                              `log_tyre_storage_date`, 
+                                              `log_tyre_storage_action`) 
+                                      VALUES ('',
+                                              '$user_id',
+                                              NOW(),
+                                              '0')";
+    $all_queries .= $query_log_action."\n";
+    //echo $query;exit;
+    $result_log_action = mysqli_query($db_link, $query_log_action);
+    if(!$result_log_action) echo mysqli_error($db_link);
+    if(mysqli_affected_rows($db_link) <= 0) {
+      echo $laguages[$default_lang]['sql_error_insert'];
+      mysqli_query($db_link, "ROLLBACK");
+      exit;
+    }
+    
+    $ltsa_id = mysqli_insert_id($db_link);
+    
     foreach($tyre_position_ids as $key => $tyre_position_id) {
       
       $tyre_model_id = $tyre_model_ids[$key];

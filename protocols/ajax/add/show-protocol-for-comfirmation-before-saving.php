@@ -11,6 +11,7 @@
   $user_fullname = $_SESSION['tyreslog']['user_fullname'];
   if(isset($_POST['tyre_storage_id'])) {
     $tyre_storage_id = $_POST['tyre_storage_id'];
+    $tyre_storage_id_formatted = sprintf('%010d', $tyre_storage_id);
   }
   if(isset($_POST['client_name'])) {
     $client_name = $_POST['client_name'];
@@ -82,7 +83,7 @@
 ?>
 
 <div id="printable_area">
-  <h1 style="text-align: center;"><?=$laguages[$default_lang]['header_protocol_print']." $tyre_storage_id";?></h1>
+  <h1 style="text-align: center;"><?=$laguages[$default_lang]['header_protocol_print']." $tyre_storage_id_formatted";?></h1>
   <h2 style="margin: 20px 0;text-align: center;"><?=$laguages[$default_lang]['company_name'];?></h2>
   <table>
     <thead>
@@ -178,6 +179,7 @@
 <p style="margin-bottom: 7%;"></p>
 <div id="choice_btns">
   <p id="message"></p>
+  <input type="hidden" name="tyre_storage_id" id="tyre_storage_id" value="<?=$tyre_storage_id;?>">
   <a id="confirm_protocol" onClick="AddTyresToWarehouse()"><?=$laguages[$default_lang]['btn_confirm'];?></a>
   <a id="cancel_protocol" class="close"><?=$laguages[$default_lang]['btn_cancel'];?></a>
   <a id="print_protocol" style="display:none;" onClick="PrintProtocol();"><?=$laguages[$default_lang]['btn_print'];?></a>

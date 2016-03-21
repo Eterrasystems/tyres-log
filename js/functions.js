@@ -404,6 +404,8 @@ function EditRestrictedUser(user_id) {
   var user_div = "#user"+user_id;
   var user_username = $(user_div+" .user_username").val();
   var user_password = $(user_div+" .user_password").val();
+  var user_firstname = $(user_div+" .user_firstname").val();
+  var user_lastname = $(user_div+" .user_lastname").val();
   //alert(task_group_name);
   $.ajax({
   url:"administration/ajax/edit/edit-restricted-user.php",
@@ -412,6 +414,8 @@ function EditRestrictedUser(user_id) {
     user_access:user_access,
     user_id:user_id,
     user_username:user_username,
+    user_firstname:user_firstname,
+    user_lastname:user_lastname,
     user_password:user_password
     }
   }).done(function(data){
@@ -3044,6 +3048,7 @@ function ShowProtocolForComfirmationBeforeSaving() {
   if(user_access == undefined) { user_access = $(".second_menu .active .second_menu_link").attr("users-rights-access");}
   if(user_access == undefined) { user_access = $("#menu .selected .active_first_level").attr("users-rights-access");}
   var tyre_storage_id = $("#tyre_storage_id").val();
+  console.log(tyre_storage_id);
   var client_id = $("#client_id").val();
   var client_name = $("#client_name").val();
   var client_error = $("#client_error").val();
@@ -3155,7 +3160,7 @@ function PrintProtocol() {
   var printContents = document.getElementById("printable_area").innerHTML;
   $("#modal_window_backgr").hide();
   $("#modal_window").hide().html("");
-  window.location = "protocols-take-in";
+  window.location = "protocols-takein-warehouse";
   //alert(printContents);
   var url = "/protocols/print-protocol.php?printContents="+printContents;
   window.open(url,'mywindow','status=no,location=no,resizable=yes,scrollbars=yes,width=950,height=800,left=0,top=0,screenX=0,screenY=0');
@@ -3173,33 +3178,10 @@ function PrintProtocolById(tyre_storage_id) {
 function AddTyresToWarehouse() {
   if(CheckEditRights() === false) return;
   ShowAjaxLoader();
-  
   var user_access = $(".second_menu .active .active .third_menu_link").attr("users-rights-access");
   if(user_access == undefined) { user_access = $(".second_menu .active .second_menu_link").attr("users-rights-access");}
   if(user_access == undefined) { user_access = $("#menu .selected .active_first_level").attr("users-rights-access");}
   var tyre_storage_id = $("#tyre_storage_id").val();
-  var client_id = $("#client_id").val();
-  var client_error = $("#client_error").val();
-  var vehicle_plate_error = $("#vehicle_plate_error").val();
-  if(client_id == undefined || client_id == "") {
-    HideAjaxLoader();
-    alert(client_error);
-    $("#client_id").focus();
-    return;
-  }
-  var vehicle_type_id = $(".vehicle_type.active").attr("data-id");
-  var vehicle_make_id = $("#vehicle_make").val();
-  var vehicle_model_id = $("#vehicle_model").val();
-  var vehicle_plate = $("#vehicle_plate").val();
-  if(vehicle_plate == undefined || vehicle_plate == "") {
-    vehicle_plate = $("#vehicle_plate_select option:selected").text();
-  }
-  if(vehicle_plate == undefined || vehicle_plate == "") {
-    HideAjaxLoader();
-    alert(vehicle_plate_error);
-    $("#vehicle_plate").focus();
-    return;
-  }
   var tyre_position_ids = [];
   var tyre_make_ids = [];
   var tyre_model_ids = [];
@@ -3243,11 +3225,6 @@ function AddTyresToWarehouse() {
   data:{
     user_access:user_access,
     tyre_storage_id:tyre_storage_id,
-    client_id:client_id,
-    vehicle_type_id:vehicle_type_id,
-    vehicle_make_id:vehicle_make_id,
-    vehicle_model_id:vehicle_model_id,
-    vehicle_plate:vehicle_plate,
     tyre_position_ids:tyre_position_ids,
     tyre_make_ids:tyre_make_ids,
     tyre_model_ids:tyre_model_ids,

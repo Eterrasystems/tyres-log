@@ -37,8 +37,8 @@
               <td width="5%"><button class="btn_save" onClick="EditRestrictedUser('<?php echo $user_id; ?>')" title="Update"><?=$laguages[$default_lang]['btn_save'];?></button></td>
               <td width="20%"><input type="text" id="user_username<?php echo $user_id; ?>" class="user_username" value="<?php echo $user_username; ?>" ></td>
               <td width="10%"><input type="password" id="user_password<?php echo $user_id; ?>" class="user_password" placeholder="******" ></td>
-              <td width="15%"><?php echo $user_firstname; ?></td>
-              <td width="15%"><?php echo $user_lastname; ?></td>
+              <td width="15%"><input type="text" id="user_firstname<?php echo $user_id; ?>" class="user_firstname" value="<?php echo $user_firstname; ?>" ></td>
+              <td width="15%"><input type="text" id="user_lastname<?php echo $user_id; ?>" class="user_lastname" value="<?php echo $user_lastname; ?>" ></td>
               <td></td>
             </tr>
           </tbody>

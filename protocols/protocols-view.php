@@ -17,7 +17,7 @@
                       INNER JOIN `vehicles_types` ON `vehicles_types`.`vehicle_type_id` = `vehicles_models`.`vehicle_type_id`
                       INNER JOIN `users` as `warehouse_workers` ON `warehouse_workers`.`user_id` = `tyres_storages`.`employer_took_tyres`
                       INNER JOIN `users` as `clients` ON `clients`.`user_id` = `tyres_storages`.`client_id`
-                      WHERE `tyres_storages`.`tyre_storage_datein` >= '$expired_date'
+                      WHERE `tyre_storage_state` = '2' AND `tyres_storages`.`tyre_storage_datein` >= '$expired_date'
                       ORDER BY `tyres_storages`.`tyre_storage_datein` DESC, `tyres_storages`.`tyre_storage_id` DESC";
   //echo $query_protocols;
   $result_protocols = mysqli_query($db_link, $query_protocols);
@@ -39,7 +39,7 @@
   <table>
     <thead>
       <td width="9%"><?=$laguages[$default_lang]['reception_protocol_thead'];?></td>
-      <td width="10%"><?=$laguages[$default_lang]['vehicle_plate_thead'];?></td>
+      <td width="7%"><?=$laguages[$default_lang]['vehicle_plate_thead'];?></td>
       <td width="10%"><?=$laguages[$default_lang]['warehouse_name_thead'];?></td>
       <td width="13%"><?=$laguages[$default_lang]['warehouse_employer_name_thead'];?></td>
       <td width="13%"><?=$laguages[$default_lang]['client_name_thead'];?></td>
@@ -47,8 +47,8 @@
       <td width="10%"><?=$laguages[$default_lang]['vehicle_model_thead'];?></td>
       <td width="10%"><?=$laguages[$default_lang]['warehouse_storage_date_thead'];?></td>
       <td width="5%"><?=$laguages[$default_lang]['details_thead'];?></td>
-      <td width="5%"><?=$laguages[$default_lang]['print_thead'];?></td>
-      <td width="5%"><?=$laguages[$default_lang]['edit_thead'];?></td>
+      <td width="7%"><?=$laguages[$default_lang]['print_thead'];?></td>
+      <td width="6%"><?=$laguages[$default_lang]['edit_thead'];?></td>
     </thead>
   </table>
 <?php
@@ -64,6 +64,7 @@
     else $tr_visibility = ' style="display:none;"';
 
     $tyre_storage_id = $protocols_row['tyre_storage_id'];
+    $tyre_storage_id_formatted = sprintf('%010d', $tyre_storage_id);
     $warehouse_name = $protocols_row['warehouse_name'];
     $vehicle_type = $protocols_row['vehicle_type'];
     $vehicle_type = $laguages[$default_lang][$vehicle_type];
@@ -82,8 +83,8 @@
     <table>
       <tbody>
         <tr>
-          <td width="9%"><?php echo $tyre_storage_id;?></td>
-          <td width="10%" style="background: #006DCC !important;color: #fff;"><?php echo $vehicle_plate;?></td>
+          <td width="9%"><?php echo $tyre_storage_id_formatted;?></td>
+          <td width="7%" style="background: #006DCC !important;color: #fff;"><?php echo $vehicle_plate;?></td>
           <td width="10%"><?php echo $warehouse_name;?></td>
           <td width="13%"><?php echo "$user_firstname $user_lastname";?></td>
           <td width="13%"><?php echo "$client_firstname $client_lastname";?></td>
@@ -91,8 +92,8 @@
           <td width="10%"><?php echo $vehicle_model;?></td>
           <td width="10%"><?php echo $tyre_storage_datein;?></td>
           <td width="5%"><button class="button show_tyres_details" data-id="<?php echo $tyre_storage_id;?>">+</button></td>
-          <td width="5%"><button class="button" onClick="PrintProtocolById('<?php echo $tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_print'];?></button></td>
-          <td width="5%"><button class="button" onClick="GetProtocolDetails('<?php echo $tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_edit'];?></button></td>
+          <td width="7%"><button class="button" onClick="PrintProtocolById('<?php echo $tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_print'];?></button></td>
+          <td width="6%"><button class="button" onClick="GetProtocolDetails('<?php echo $tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_edit'];?></button></td>
         </tr>
       </tbody>
     </table>
@@ -291,8 +292,8 @@
   <table>
     <tbody>
       <tr>
-        <td width="9input type="text" id="search_tyre_storage_id"></td>
-        <td width="10%" style="background: #006DCC !important;color: #fff;"><input type="text" id="search_vehicle_plate"></td>
+        <td width="9"><input type="text" id="search_tyre_storage_id"></td>
+        <td width="7%" style="background: #006DCC !important;color: #fff;"><input type="text" id="search_vehicle_plate"></td>
         <td width="10%">
           <select id="search_warehouse_id">
             <option value="0"></option>
@@ -371,7 +372,7 @@
         </td>
         <td width="10%"><input type="text" id="search_tyre_storage_datein" class="datepicker"></td>
         <td width="5%"><button class="button" onClick="SearchProtocol()"><?=$laguages[$default_lang]['btn_search'];?></button></td>
-        <td width="10%"></td>
+        <td width="13%"></td>
       </tr>
     </tbody>
   </table>

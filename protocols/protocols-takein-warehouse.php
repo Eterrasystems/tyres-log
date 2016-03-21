@@ -24,13 +24,16 @@
         echo "<p>- <a href='/protocols-takein-warehouse?tyre_storage_id=$tyre_storage_id'>$tyre_storage_id_formatted / $client_name / $tyre_storage_datein</a></p>";
       }
     }
+    else {
+      echo $laguages[$default_lang]['no_tyres_for_takein_warehouse'];
+    }
   }
   else {
     
     $tyre_storage_id = $_GET['tyre_storage_id'];
     $tyre_storage_id_formatted = sprintf('%010d', $_GET['tyre_storage_id']);
     
-    $query_tyre_storages = "SELECT `tyres_storages`.`vehicle_type_id`,`tyres_storages`.`vehicle_make_id`,`tyres_storages`.`vehicle_model_id`,
+    $query_tyre_storages = "SELECT `tyres_storages`.`vehicle_type_id`,`tyres_storages`.`client_id`,`tyres_storages`.`vehicle_make_id`,`tyres_storages`.`vehicle_model_id`,
                                   `tyres_storages`.`vehicle_plate`,`tyres_storages`.`tyre_storage_datein`,`warehouses`.`warehouse_name`,`warehouse_workers`.`user_firstname`,
                                   `warehouse_workers`.`user_lastname`,`clients`.`user_firstname` as client_firstname,`clients`.`user_lastname` as client_lastname
                             FROM `tyres_storages`
@@ -43,16 +46,17 @@
     if(!$result_tyre_storages) echo mysqli_error($db_link);
     if(mysqli_num_rows($result_tyre_storages) > 0) {
         
-        $row_tyre_storages = mysqli_fetch_assoc($result_tyre_storages);
+      $row_tyre_storages = mysqli_fetch_assoc($result_tyre_storages);
 
-        $current_vehicle_type_id = $row_tyre_storages['vehicle_type_id'];
-        $current_vehicle_make_id = $row_tyre_storages['vehicle_make_id'];
-        $current_vehicle_model_id = $row_tyre_storages['vehicle_model_id'];
-        $vehicle_plate = $row_tyre_storages['vehicle_plate'];
-        $tyre_storage_datein = date("H:m",  strtotime($row_tyre_storages['tyre_storage_datein']));
-        $warehouse_name = $row_tyre_storages['warehouse_name'];
-        $offince_employer_took_tyres = $row_tyre_storages['user_firstname']." ".$row_tyre_storages['user_lastname'];
-        $client_name = $row_tyre_storages['client_firstname']." ".$row_tyre_storages['client_lastname'];
+      $client_id = $row_tyre_storages['client_id'];
+      $current_vehicle_type_id = $row_tyre_storages['vehicle_type_id'];
+      $current_vehicle_make_id = $row_tyre_storages['vehicle_make_id'];
+      $current_vehicle_model_id = $row_tyre_storages['vehicle_model_id'];
+      $vehicle_plate = $row_tyre_storages['vehicle_plate'];
+      $tyre_storage_datein = date("H:m",  strtotime($row_tyre_storages['tyre_storage_datein']));
+      $warehouse_name = $row_tyre_storages['warehouse_name'];
+      $offince_employer_took_tyres = $row_tyre_storages['user_firstname']." ".$row_tyre_storages['user_lastname'];
+      $client_name = $row_tyre_storages['client_firstname']." ".$row_tyre_storages['client_lastname'];
 
     }
 ?>
@@ -61,7 +65,8 @@
 <!--tyre_storage_id-->
     <div class="form_row">
       <label><?=$laguages[$default_lang]['reception_protocol_label'];?>:</label>
-      <input type="text" name="tyre_storage_id" id="tyre_storage_id" class="input_text" value="<?=$tyre_storage_id_formatted;?>" disabled="disabled">
+      <input type="hidden" name="tyre_storage_id" id="tyre_storage_id" value="<?=$tyre_storage_id;?>">
+      <span><?=$tyre_storage_id_formatted;?></span>
     </div>
     <hr>
     
@@ -69,6 +74,7 @@
     <div class="form_row">
       <label><?=$laguages[$default_lang]['client_name_label'];?>:</label>
       <span><?=$client_name;?></span>
+      <input type="hidden" name="client_id" id="client_id"  value="<?=$client_id;?>"/>
       <input type="hidden" name="client_name" id="client_name"  value="<?=$client_name;?>"/>
     </div>
 
@@ -88,11 +94,11 @@
         $vehicle_type = $vehicles_types['vehicle_type'];
         $vehicle_type = $laguages[$default_lang][$vehicle_type];
         $vehicle_image_id = $vehicles_types['vehicle_image_id'];
+        $class_active = "";
         if($vehicle_type_id == $current_vehicle_type_id) {
           $class_active = " active";
           $current_vehicle_type = $vehicle_type;
         }
-        $class_active = "";
 
         echo "<a data-id='$vehicle_type_id' id='$vehicle_image_id' class='vehicle_type$class_active' title='$vehicle_type'>$vehicle_type</a>";
       }
@@ -119,11 +125,11 @@
 
           $vehicle_make_id = $vehicles_makes['vehicle_make_id'];
           $vehicle_make = $vehicles_makes['vehicle_make'];
+          $selected = "";
           if($vehicle_make_id == $current_vehicle_make_id) {
             $selected = "selected='selected'";
             $current_vehicle_make = $vehicle_make;
           }
-          $selected = "";
 
           echo "<option value='$vehicle_make_id' $selected>$vehicle_make</option>";
         }
@@ -140,21 +146,38 @@
 <!--vehicle_model-->
     <div class="form_row">
       <label><?=$laguages[$default_lang]['vehicle_model_label'];?>:</label>
-      <select id="vehicle_model_default">
-        <option value="0" selected="selected"><?=$laguages[$default_lang]['choose_vehicle_make_first'];?></option>
-      </select>
-      <select id="vehicle_model" style="display: none;">
+      <select id="vehicle_model" class="hidden">
+<?php
+      $query = "SELECT `vehicles_models`.* 
+                FROM `vehicles_models` 
+                WHERE `vehicle_type_id` = '$current_vehicle_type_id' AND `vehicle_make_id` = '$current_vehicle_make_id'
+                ORDER BY `vehicle_model` ASC";
+      echo $query;
+      $result = mysqli_query($db_link, $query);
+      if(mysqli_num_rows($result) > 0) {
 
+        while($vehicles_models = mysqli_fetch_assoc($result)) {
+
+          $vehicle_model_id = $vehicles_models['vehicle_model_id'];
+          $vehicle_model = $vehicles_models['vehicle_model'];
+          $selected = "";
+          if($vehicle_model_id = $current_vehicle_model_id) {
+            $selected = "selected='selected'";
+            $current_vehicle_model = $vehicle_model;
+          }
+
+          echo "<option value='$vehicle_model_id' $selected>$vehicle_model</option>";
+        }
+      }
+?>
       </select>
+      <span><?=$current_vehicle_model;?></span>
     </div>
 <!--vehicle_plate-->
     <div class="form_row">
       <label><?=$laguages[$default_lang]['vehicle_plate_label'];?>:</label>
-      <input type="text" name="vehicle_plate" id="vehicle_plate" class="input_text">
-      <input type="hidden" name="vehicle_plate_error" id="vehicle_plate_error" value="<?=$laguages[$default_lang]['error_reception_protocol_vehicle_plate'];?>">
-      <select id="vehicle_plate_select" style="display: none;">
-
-      </select>
+      <input type="text" name="vehicle_plate" id="vehicle_plate" class="hidden" value="<?=$vehicle_plate;?>">
+      <span><?=$vehicle_plate;?></span>
     </div>
 <!--tyres_form-->
     <div id="tyres_form">
@@ -233,7 +256,7 @@
           $query = "SELECT `tyres_width`.`tyre_width_id`, `tyres_width`.`tyre_width` 
                     FROM `tyres_width_to_vehicle_type`
                     INNER JOIN `tyres_width` ON `tyres_width`.`tyre_width_id` = `tyres_width_to_vehicle_type`.`tyre_width_id`
-                    WHERE `tyres_width_to_vehicle_type`.`vehicle_type_id` = '1'
+                    WHERE `tyres_width_to_vehicle_type`.`vehicle_type_id` = '$current_vehicle_type_id'
                     ORDER BY `tyres_width`.`tyre_width_order` ASC";
           //echo $query;
           $result = mysqli_query($db_link, $query);
@@ -401,13 +424,6 @@
 <script type="text/javascript">
 $(document).ready(function() {
   $( ".datepicker" ).datepicker({ dateFormat: "yy-mm-dd" });
-  
-  $(".vehicle_type").click(function() {
-    $(".vehicle_type").removeClass("active");
-    $(this).addClass("active");
-    LoadVehicleMakesForTypeInSelect();
-    LoadTyreWidthsForVehicleType();
-  });
   
   $(".tyre_seasons").click(function() {
     var tyre_position = $(this).attr("tyre-position");

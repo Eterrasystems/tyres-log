@@ -9,7 +9,7 @@ define("URLWEBSITE", "");
 //setlocale(LC_ALL, 'bg_BG.UTF-8');
 date_default_timezone_set('Europe/Sofia');
 
-$default_lang = "en_US";
+$default_lang = "bg_BG";
 if(isset($_COOKIE['lang'])) {
   $default_lang = $_COOKIE['lang'];
 }

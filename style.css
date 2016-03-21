@@ -118,7 +118,7 @@ table tbody td {
   border: none;
 }
 .hidden {
-  display: none;
+  display: none !important;
 }
 .float_left {
   float:left !important;
@@ -888,6 +888,7 @@ textarea {
 .selected_tyre_width a,
 .selected_tyre_height a,
 .selected_tyre_diameter a,
+.selected_tyre_ratio a,
 .selected_warehouse a,
 .selected_warehouse_type a {
   width: 98%;
