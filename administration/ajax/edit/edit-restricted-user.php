@@ -1,6 +1,7 @@
 <?php
-  include_once '../../../../config.php';
-  include_once '../../../functions/include-functions.php';
+  include_once("../../../config.php");
+  
+  $db_link = DB_OpenI();
   
   check_for_csrf();
 
@@ -40,11 +41,11 @@
       $bcrypt_password = crypt($user_password , $bcrypt_salt);
       $query_update_user .= ", `user_salted_password` = '$bcrypt_password'";
     }
-    $query_update_user .= " `user_firstname` = '$user_firstname', `user_lastname` = '$user_lastname' WHERE `user_id` = '$user_id'";
+    $query_update_user .= " ,`user_firstname` = '$user_firstname', `user_lastname` = '$user_lastname' WHERE `user_id` = '$user_id'";
     //echo $query_update_user;exit;
 
     $result_update_user = mysqli_query($db_link,$query_update_user);
     if(!$result_update_user) {
-      echo mysqli_error();
+      echo mysqli_error($db_link);
     }
   }

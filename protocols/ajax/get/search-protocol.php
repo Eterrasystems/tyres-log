@@ -52,7 +52,7 @@
                       INNER JOIN `vehicles_models` ON `vehicles_models`.`vehicle_model_id` = `tyres_storages`.`vehicle_model_id`
                       INNER JOIN `vehicles_makes` ON `vehicles_makes`.`vehicle_make_id` = `vehicles_models`.`vehicle_make_id`
                       INNER JOIN `vehicles_types` ON `vehicles_types`.`vehicle_type_id` = `vehicles_models`.`vehicle_type_id`
-                      INNER JOIN `users` as `warehouse_workers` ON `warehouse_workers`.`user_id` = `tyres_storages`.`user_id`
+                      INNER JOIN `users` as `warehouse_workers` ON `warehouse_workers`.`user_id` = `tyres_storages`.`employer_took_tyres`
                       INNER JOIN `users` as `clients` ON `clients`.`user_id` = `tyres_storages`.`client_id` 
                       WHERE `tyres_storages`.`tyre_storage_id` IS NOT NULL";
   if(!empty($tyre_storage_id)) {
@@ -87,11 +87,11 @@
   }
   if(!empty($tyre_storage_date)) {
     $query_protocols .= ($and) ? " AND" : " AND (";
-    $query_protocols .= " `tyres_storages`.`tyre_storage_date` = '$tyre_storage_date'";
+    $query_protocols .= " `tyre_storage_datein`.`tyre_storage_datein` = '$tyre_storage_date'";
     $and = true;
   }
   $query_protocols .= ($and) ? ")" : "";
-  $query_protocols .= " ORDER BY `tyres_storages`.`tyre_storage_date` DESC";
+  $query_protocols .= " ORDER BY `tyres_storages`.`tyre_storage_datein` DESC";
   //echo $query_protocols;exit;
   $result_protocols = mysqli_query($db_link, $query_protocols);
   $protocols_count = mysqli_num_rows($result_protocols);
@@ -111,8 +111,8 @@
 ?>
   <table>
     <thead>
-      <td width="10%"><?=$laguages[$default_lang]['reception_protocol_thead'];?></td>
-      <td width="10%"><?=$laguages[$default_lang]['vehicle_plate_thead'];?></td>
+      <td width="9%"><?=$laguages[$default_lang]['reception_protocol_thead'];?></td>
+      <td width="7%"><?=$laguages[$default_lang]['vehicle_plate_thead'];?></td>
       <td width="10%"><?=$laguages[$default_lang]['warehouse_name_thead'];?></td>
       <td width="13%"><?=$laguages[$default_lang]['warehouse_employer_name_thead'];?></td>
       <td width="13%"><?=$laguages[$default_lang]['client_name_thead'];?></td>
@@ -120,7 +120,8 @@
       <td width="10%"><?=$laguages[$default_lang]['vehicle_model_thead'];?></td>
       <td width="10%"><?=$laguages[$default_lang]['warehouse_storage_date_thead'];?></td>
       <td width="5%"><?=$laguages[$default_lang]['details_thead'];?></td>
-      <td width="9%"><?=$laguages[$default_lang]['edit_thead'];?></td>
+      <td width="7%"><?=$laguages[$default_lang]['print_thead'];?></td>
+      <td width="6%"><?=$laguages[$default_lang]['edit_thead'];?></td>
     </thead>
   </table>
 <?php
@@ -136,6 +137,7 @@
     else $tr_visibility = ' style="display:none;"';
 
     $tyre_storage_id = $protocols_row['tyre_storage_id'];
+    $tyre_storage_id_formatted = sprintf('%010d', $tyre_storage_id);
     $warehouse_name = $protocols_row['warehouse_name'];
     $vehicle_type = $protocols_row['vehicle_type'];
     $vehicle_type = $laguages[$default_lang][$vehicle_type];
@@ -146,7 +148,7 @@
     $user_lastname = $protocols_row['user_lastname'];
     $client_firstname = $protocols_row['client_firstname'];
     $client_lastname = $protocols_row['client_lastname'];
-    $tyre_storage_date = $protocols_row['tyre_storage_date'];
+    $tyre_storage_datein = $protocols_row['tyre_storage_datein'];
     $class = ((($key_1 % 2) == 1) ? " even" : " odd");
 
 ?>
@@ -154,17 +156,17 @@
     <table>
       <tbody>
         <tr>
-          <td width="10%"><?=$tyre_storage_id;?></td>
-          <td width="10%" style="background: #006DCC !important;color: #fff;"><?=$vehicle_plate;?></td>
+          <td width="9%"><?=$tyre_storage_id_formatted;?></td>
+          <td width="7%" style="background: #006DCC !important;color: #fff;"><?=$vehicle_plate;?></td>
           <td width="10%"><?=$warehouse_name;?></td>
           <td width="13%"><?="$user_firstname $user_lastname";?></td>
           <td width="13%"><?="$client_firstname $client_lastname";?></td>
           <td width="10%"><?=$vehicle_make;?></td>
           <td width="10%"><?=$vehicle_model;?></td>
-          <td width="10%"><?=$tyre_storage_date;?></td>
+          <td width="10%"><?=$tyre_storage_datein;?></td>
           <td width="5%"><button class="button show_tyres_details" data-id="<?=$tyre_storage_id;?>">+</button></td>
-          <td width="5%"><button class="button" onClick="PrintProtocolByIdFromSearch('<?=$tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_print'];?></button></td>
-          <td width="5%"><button class="button" onClick="GetProtocolDetails('<?=$tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_edit'];?></button></td>
+          <td width="7%"><button class="button" onClick="PrintProtocolByIdFromSearch('<?=$tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_print'];?></button></td>
+          <td width="6%"><button class="button" onClick="GetProtocolDetails('<?=$tyre_storage_id;?>')"><?=$laguages[$default_lang]['btn_edit'];?></button></td>
         </tr>
       </tbody>
     </table>
@@ -206,7 +208,7 @@
         </thead>
         <tbody>
           <tr>
-            <td><?=$tyre_storage_date;?></td>
+            <td><?=$tyre_storage_datein;?></td>
             <td><?=$warehouse_name;?></td>
             <td><?="$user_firstname $user_lastname";?></td>
             <td></td>

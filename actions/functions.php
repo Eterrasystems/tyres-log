@@ -89,6 +89,7 @@ function list_user_menu_rights($menu_id, $user_id) {
             <td>&nbsp;</td>
             <td style="text-align: left;">
 <?php
+          if ($menu_level == 0) echo "&nbsp; $menu_name";
           if ($menu_level == 1) echo "&nbsp; - $menu_name";
           if ($menu_level == 2) echo "&nbsp;&nbsp; - - $menu_name";
           if ($menu_level == 3) echo "&nbsp;&nbsp;&nbsp; - - - $menu_name";
@@ -157,56 +158,62 @@ function listMenuGroup($theId, $theType, $theDepartment) {
     global $db_link;
     global $laguages;
     global $default_lang;
-    $menuResult = mysqli_query($db_link, "SELECT `menu_id`, `menu_parent_id`, `menu_level`, `menu_name`,
-    `menu_url`, `menu_friendly_url`, `menu_image_url`, `menu_sort`, `menu_active`,
-    `user_company_type_id`,`user_department_id`, `users_rights_groups_access`, `users_rights_groups_edit`, `users_rights_groups_delete`
-    FROM `menus`
-    LEFT JOIN (`users_rights_groups`) ON (`users_rights_groups`.`user_company_type_id` = " . $theType . " AND `users_rights_groups`.`user_department_id` = ".$theDepartment." AND `users_rights_groups`.`users_rights_groups_access` = `menus`.`menu_id`) 
-    WHERE `menu_parent_id` = " . $theId . " AND `menu_active` = 1 ORDER BY `menu_sort`");
+    $query = "SELECT `menu_id`, `menu_parent_id`, `menu_level`, `menu_name`,`menu_url`, `menu_friendly_url`, `menu_image_url`, `menu_sort`, `menu_active`,
+                    `user_company_type_id`,`user_department_id`, `users_rights_groups_access`, `users_rights_groups_edit`, `users_rights_groups_delete`
+              FROM `menus`
+              LEFT JOIN (`users_rights_groups`) ON (`users_rights_groups`.`user_company_type_id` = " . $theType . " AND `users_rights_groups`.`user_department_id` = ".$theDepartment." AND `users_rights_groups`.`users_rights_groups_access` = `menus`.`menu_id`) 
+              WHERE `menu_parent_id` = " . $theId . " AND `menu_active` = 1 ORDER BY `menu_sort`";
+    echo $query;exit;
+    $menuResult = mysqli_query($db_link, $query);
     if ($menuResult) {
 
         $i = -1;
         while ($menuRow = mysqli_fetch_assoc($menuResult)) {
             $i++;
+            $menu_id = $menuRow['menu_id'];
             $menu_name = $menuRow['menu_name'];
             $menu_name = $laguages[$default_lang][$menu_name];
-            $class = ((($i % 2) == 1) ? " even" : " odd");
+            $menu_level = $menuRow['menu_level'];
+            $users_rights_groups_access = $menuRow['users_rights_groups_access'];
+            $users_rights_groups_edit = $menuRow['users_rights_groups_edit'];
+            $users_rights_groups_delete = $menuRow['users_rights_groups_delete'];
+            $class = ((($i % 2) == 1) ? " odd" : " even");
             $details_btn = "";
-            if($menuRow['menu_level'] == 0) {
-              $_SESSION['tyreslog']['first_level_id'] = $menuRow['menu_id'];
+            if($menu_level == 0) {
+              $_SESSION['tyreslog']['first_level_id'] = $menu_id;
               $details_btn = '<button class="menu_header btn" button-id="'.$_SESSION['tyreslog']['first_level_id'].'">+</button>';
             }
-            $class_menu_level = ($menuRow['menu_level'] == 0) ? "" : " children children".$_SESSION['tyreslog']['first_level_id'];
-            echo "<tr class=\"page" . $menuRow['menu_id'] . "$class$class_menu_level\">";
+            $class_menu_level = ($menu_level == 0) ? "" : " children children".$_SESSION['tyreslog']['first_level_id'];
+            echo "<tr class=\"page" . $menu_id . "$class$class_menu_level\">";
             echo "<td>&nbsp;</td>\n";
             echo "<td style=\"text-align: left;\">";
-            if ($menuRow['menu_level'] == 1)
+            if ($menu_level == 1)
                 echo " - ";
-            if ($menuRow['menu_level'] == 2)
+            if ($menu_level == 2)
                 echo " - - ";
-             if ($menuRow['menu_level'] == 3)
+             if ($menu_level == 3)
                 echo " - - - ";
             echo $menu_name;
             echo ": </td>\n";
             echo "<td>\n";
-            echo "<div class = \"checkbox" . (!empty($menuRow['users_rights_groups_access']) ? " checkbox_checked" : NULL) . "\">\n";
-            echo "<input type = \"checkbox\" name=\"access\" " . (!empty($menuRow['users_rights_groups_access']) ? " checked = \"checked\"" : NULL) . " value=\"" . $menuRow['menu_id'] . "\">\n";
+            echo "<div class = \"checkbox" . (!empty($users_rights_groups_access) ? " checkbox_checked" : NULL) . "\">\n";
+            echo "<input type = \"checkbox\" name=\"access\" " . (!empty($users_rights_groups_access) ? " checked = \"checked\"" : NULL) . " value=\"" . $menu_id . "\">\n";
             echo "</div>\n";
             echo "</td>\n";
             echo "<td>\n";
-            echo "<div class = \"checkbox" . (!empty($menuRow['users_rights_groups_edit']) ? " checkbox_checked" : NULL) . "\">\n";
-            echo "<input type = \"checkbox\" name=\"rights\" " . (!empty($menuRow['users_rights_groups_edit']) ? " checked = \"checked\"" : NULL) . " value=\"edit\">\n";
+            echo "<div class = \"checkbox" . (!empty($users_rights_groups_edit) ? " checkbox_checked" : NULL) . "\">\n";
+            echo "<input type = \"checkbox\" name=\"rights\" " . (!empty($users_rights_groups_edit) ? " checked = \"checked\"" : NULL) . " value=\"edit\">\n";
             echo "</div>\n";
             echo "</td>\n";
             echo "<td>\n";
-            echo "<div class = \"checkbox" . (!empty($menuRow['users_rights_groups_delete']) ? " checkbox_checked" : NULL) . "\">\n";
-            echo "<input type = \"checkbox\" name=\"rights\" " . (!empty($menuRow['users_rights_groups_delete']) ? " checked = \"checked\"" : NULL) . " value=\"delete\">\n";
+            echo "<div class = \"checkbox" . (!empty($users_rights_groups_delete) ? " checkbox_checked" : NULL) . "\">\n";
+            echo "<input type = \"checkbox\" name=\"rights\" " . (!empty($users_rights_groups_delete) ? " checked = \"checked\"" : NULL) . " value=\"delete\">\n";
             echo "</div>\n";
             echo "</td>\n";
             echo "<td>$details_btn</td>\n";
             echo "<td>&nbsp;</td>\n";
             echo "</tr>\n";
-            listMenuGroup($menuRow['menu_id'], $theType, $theDepartment);
+            listMenuGroup($menu_id, $theType, $theDepartment);
         }// while ( $menuRow = mysqli_fetch_assoc($menuResult) )
         mysqli_free_result($menuResult);
     } else {// if ($menuResult)

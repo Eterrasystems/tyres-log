@@ -1,4 +1,4 @@
-<h1><?=$laguages[$default_lang]['tyre_reception'];?>:</h1>
+<h1><?=$laguages[$default_lang]['tyre_reception'];?></h1>
 <?php
   if(!isset($_GET['tyre_storage_id'])) {
     $query_tyre_storages = "SELECT `tyres_storages`.`tyre_storage_id`,`tyres_storages`.`tyre_storage_datein`,
